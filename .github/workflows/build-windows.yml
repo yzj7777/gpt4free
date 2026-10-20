@@ -4,15 +4,28 @@ name: build-windows-exe
 #   * dist/g4f-proxy.exe            single file, double-click to run
 #   * dist/g4f-proxy-portable.zip   folder build, faster start
 # Trigger it manually from the Actions tab, or push a v* tag.
+#
+# Artifacts require a GitHub login to download; set publish_release (or push a
+# v* tag) and the same files are also attached to a Release, which is a plain
+# public download link.
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Attach the exe to a GitHub Release (public download link)"
+        type: boolean
+        default: false
+      release_tag:
+        description: "Tag to release under (default: v0.0.0-win.<run number>)"
+        type: string
+        default: ""
   push:
     tags:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -114,3 +127,33 @@ jobs:
             dist/g4f-proxy-portable.zip
           if-no-files-found: error
           retention-days: 30
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          Get-FileHash dist\g4f-proxy.exe, dist\g4f-proxy-portable.zip -Algorithm SHA256 |
+            ForEach-Object { "{0}  {1}" -f $_.Hash.ToLower(), (Split-Path $_.Path -Leaf) } |
+            Tee-Object -FilePath dist\SHA256SUMS.txt
+
+      - name: Publish release
+        if: ${{ inputs.publish_release || startsWith(github.ref, 'refs/tags/') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          name: g4f proxy ${{ inputs.release_tag || github.ref_name }}
+          body: |
+            One-click Windows build of the g4f OpenAI-compatible proxy.
+
+            * `g4f-proxy.exe` — single file, double-click to run.
+              Prints the API key, copies it to the clipboard, serves
+              http://127.0.0.1:8080/v1
+            * `g4f-proxy-portable.zip` — folder build, faster start, fewer
+              antivirus false positives.
+            * `SHA256SUMS.txt` — verify your download.
+
+            DeepSeek Harness: `g4f-proxy.exe --dsh --set-default`
+          files: |
+            dist/g4f-proxy.exe
+            dist/g4f-proxy-portable.zip
+            dist/SHA256SUMS.txt
+          fail_on_unmatched_files: true
