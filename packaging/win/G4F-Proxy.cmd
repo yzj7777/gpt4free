@@ -31,7 +31,7 @@ if errorlevel 1 (
 
 echo [*] starting g4f proxy (first run downloads dependencies, ~1-2 min) ...
 echo.
-uv run --python 3.12 --project "%CD%" g4f-api %*
+uv run g4f-api %*
 set "CODE=%ERRORLEVEL%"
 
 echo.

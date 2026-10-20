@@ -531,12 +531,14 @@ def main(argv: list[str] | None = None) -> int:
                 args.port = candidate
                 break
 
+    # Seed first: importing g4f.config (below) must never be the thing that
+    # decides whether an offline machine can start.
+    seed_catalog()
+
     args.key_file = args.key_file.expanduser().resolve()
     routes_file = _resolve_routes_file(args.routes)
 
     base_url = f"http://127.0.0.1:{args.port}/v1"
-
-    seed_catalog()
     api_key, key_source = resolve_key(args.key_file, args.rotate_key)
     _say(f"api key {key_source}")
 
