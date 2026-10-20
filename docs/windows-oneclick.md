@@ -10,14 +10,18 @@
 | 方案 | 产物 | 用户侧需要什么 | 首次启动 | 体积 | 可离线 | 评价 |
 |---|---|---|---|---|---|---|
 | **A. 免构建启动器** | `G4F-Proxy.cmd` | 双击 + 联网（首次） | 1–3 min 装依赖 | < 1 KB | 之后可 | 最省事，随时跟随仓库更新 |
-| **B. PyInstaller 单文件** | `g4f-proxy.exe` | 双击 | 4–8 s | 约 90–130 MB | ✅ 完全离线 | **推荐主方案**，真·单个程序 |
+| **B. PyInstaller 单文件** | `g4f-proxy.exe` | 双击 | 4–8 s | 见下方实测 | ✅ 完全离线 | **推荐主方案**，真·单个程序 |
 | **C. 便携目录** | `g4f-proxy-portable.zip` | 解压后双击 | 1–2 s | 同 B，解压后约 200 MB | ✅ | B 的稳健版，启动快，杀软误报少 |
 | D. Nuitka / MSVC | `g4f-proxy.exe` | 双击 | 1–3 s | 类似 | ✅ | 需要 VS Build Tools，编译 20+ 分钟，收益不大 |
 | E. Docker Desktop | 镜像 | 装 Docker + WSL2 | — | GB 级 | ✅ | 不符合"一键"，不推荐 |
 
-**已执行：** A 已可直接用；B/C 的构建链（spec + 脚本 + CI）已落地，用一条命令或一次点击即可产出成品；
-本仓库同时提供了 **Linux 侧可验证的等价物**（同一份 spec 与启动逻辑），因为 PyInstaller 不能跨平台交叉编译，
-Windows 的 exe 只能在 Windows runner 上生成 —— 见第四节的 CI，或你自己机器上的一行命令。
+**已实测：** 方案 B/C 已在 **GitHub Actions 的 windows-latest** 上真实构建通过（下文的 CI 工作流），
+产物上传为 artifact `g4f-proxy-windows-x64`，**130.0 MB**（单文件 exe + 便携包，压缩后合计）。
+构建日志中的 `Report sizes` 步骤会打印两个文件各自的大小。CI 里的两步冒烟测试全部通过：
+`--print --json` 拿到 base_url/api_key，以及真实启动服务后 `GET /v1/models` 返回 200。
+
+同一份 spec 和启动逻辑在 Linux 上也验证过（PyInstaller 不能跨平台交叉编译，exe 只能在 Windows 上产出，
+所以 Windows 侧走 CI 或你本机的一行命令）。
 
 ---
 
@@ -146,7 +150,7 @@ python packaging\win\validate_spec.py
 
 1. 把仓库 push 到你自己的 GitHub。
 2. **Actions → build-windows-exe → Run workflow**。
-3. 约 8–12 分钟，在 Artifacts 里下载 `g4f-proxy-windows-x64`
+3. 约 3–5 分钟（实测 3 分 09 秒），在 Artifacts 里下载 `g4f-proxy-windows-x64`
    （含 `g4f-proxy.exe` 和 `g4f-proxy-portable.zip`）。
 4. 打 tag（`v1.0.0`）也会自动触发。
 
@@ -156,6 +160,17 @@ CI 里跑的和本机完全一样的两项冒烟测试（`--print --json` + 真�
 > 注意：fork 仓库默认可能需要你在 **Settings → Actions → General** 里允许工作流。
 
 ---
+
+### 4.1 已经跑通的这次构建
+
+| | |
+|---|---|
+| 仓库 | `yzj7777/gpt4free`（分支 `arena/de64e7c6-gpt4free`） |
+| 运行 | `build-windows-exe` #39405893582 ✅，耗时 **3 分 09 秒** |
+| 产物 | `g4f-proxy-windows-x64`，**130.0 MB**（exe + 便携包，压缩后） |
+| 验证 | `--print --json` ✅ / 启动服务 + `GET /v1/models` 200 ✅ |
+
+页面路径：`Actions → build-windows-exe → 最近一次运行 → Artifacts`。
 
 ## 五、用起来之后
 

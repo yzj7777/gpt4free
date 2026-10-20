@@ -10,10 +10,6 @@ on:
   push:
     tags:
       - "v*"
-    # NOTE: temporary trigger for the arena/de64e7c6-gpt4free branch so the
-    # build can be executed and verified; removed again right after.
-    branches:
-      - "arena/de64e7c6-gpt4free"
 
 permissions:
   contents: read
