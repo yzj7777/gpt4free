@@ -166,7 +166,7 @@ CI 里跑的和本机完全一样的两项冒烟测试（`--print --json` + 真�
 | | |
 |---|---|
 | 仓库 | `yzj7777/gpt4free`（分支 `arena/de64e7c6-gpt4free`） |
-| 运行 | `build-windows-exe` #39405893582 ✅，耗时 **3 分 09 秒** |
+| 运行 | `build-windows-exe` #39406396640 ✅，耗时 **3 分 32 秒**（同一提交上完整通过） |
 | 产物 | `g4f-proxy-windows-x64`，**130.0 MB**（exe + 便携包，压缩后） |
 | 验证 | `--print --json` ✅ / 启动服务 + `GET /v1/models` 200 ✅ |
 
