@@ -20,15 +20,15 @@
 
 | 文件 | 大小 | 直接下载 |
 |---|---|---|
-| `g4f-proxy.exe`（单文件） | **64.6 MB** | [下载](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/g4f-proxy.exe) |
-| `g4f-proxy-portable.zip`（便携目录） | **66.1 MB** | [下载](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/g4f-proxy-portable.zip) |
-| `SHA256SUMS.txt` | 171 B | [校验和](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/SHA256SUMS.txt) |
+| `g4f-proxy.exe`（单文件） | **64.6 MB** | [下载](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.2/g4f-proxy.exe) |
+| `g4f-proxy-portable.zip`（便携目录） | **66.1 MB** | [下载](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.2/g4f-proxy-portable.zip) |
+| `SHA256SUMS.txt` | 171 B | [校验和](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.2/SHA256SUMS.txt) |
 
-发布页：<https://github.com/yzj7777/gpt4free/releases/tag/v0.0.0-win.1>
+发布页：<https://github.com/yzj7777/gpt4free/releases/tag/v0.0.0-win.2>
 
 ```
-exe  sha256 14ecfc4f36b9d9bda7445e2315166e0e7856964248981c29c1943079d4183108
-zip  sha256 54c11dfe4b9a697251fb83783ae9ea90450d44a25bdedc055a81917df8bddd19
+exe  sha256 774dfce33a90c92d8874be6e4e6710b602a25d1432d799e53491e02d2742d0d1
+zip  sha256 3575af40e17f3564c6c70b138c1c4cbe82a2ce99c6a65a8ae3a7a47f243a18e4
 ```
 
 CI 里的两步冒烟测试全部通过：`--print --json` 拿到 base_url/api_key，
