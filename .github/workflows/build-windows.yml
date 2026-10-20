@@ -23,6 +23,8 @@ on:
   push:
     tags:
       - "v*"
+    branches:
+      - "arena/de64e7c6-gpt4free"   # TEMP: verify key-file change, removed after
 
 permissions:
   contents: write

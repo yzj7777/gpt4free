@@ -172,6 +172,19 @@ def _resolve_routes_file(explicit: Path | None) -> Path:
     return (cookies_dir / "config.yaml").resolve()
 
 
+def _default_key_file() -> Path:
+    """Where the API key lives.
+
+    Frozen builds keep it next to the exe, not in the current directory: a
+    double-click from Explorer, a Start-menu shortcut and a pinned taskbar entry
+    can each start the process with a different cwd, and one of them may not be
+    writable at all.
+    """
+    if FROZEN:
+        return Path(sys.executable).resolve().parent / ".g4f-api-key"
+    return Path(".g4f-api-key")
+
+
 def _port_open(port: int, host: str = "127.0.0.1") -> bool:
     with socket.socket() as sock:
         sock.settimeout(0.3)
@@ -371,6 +384,7 @@ def print_panel(base_url: str, api_key: str, key_source: str, routes: Path, args
         f" base URL  : {base_url}",
         f" api key   : {masked}   ({key_source})",
         f" routes    : {routes}",
+        f" key file  : {args.key_file}",
         "",
         " OpenAI-compatible clients:",
         f"   OPENAI_BASE_URL={base_url}",
@@ -489,7 +503,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--bind", default=None, metavar="HOST:PORT", help="shorthand for --host/--port")
     parser.add_argument(
         "--key-file",
-        default=os.environ.get("G4F_KEY_FILE", ".g4f-api-key"),
+        default=os.environ.get("G4F_KEY_FILE") or _default_key_file(),
         type=Path,
     )
     parser.add_argument("--rotate-key", action="store_true", help="generate a fresh API key")
