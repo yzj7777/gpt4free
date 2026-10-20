@@ -10,8 +10,6 @@ on:
   push:
     tags:
       - "v*"
-    branches:
-      - "arena/de64e7c6-gpt4free"   # TEMP: verify the final commit, removed after
 
 permissions:
   contents: read
