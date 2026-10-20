@@ -1,5 +1,21 @@
 # Windows one-click build
 
+## Just want the exe?
+
+Download it (no GitHub login needed):
+
+- **`g4f-proxy.exe`** (64.6 MB, single file) —
+  <https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/g4f-proxy.exe>
+- **`g4f-proxy-portable.zip`** (66.1 MB, faster start) —
+  <https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/g4f-proxy-portable.zip>
+- checksums —
+  <https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/SHA256SUMS.txt>
+
+Double-click it. The window shows the API key (also copied to the clipboard) and
+serves `http://127.0.0.1:8080/v1`.
+
+## Build it yourself
+
 Two ways to get a double-clickable proxy. Full guide (Chinese): [docs/windows-oneclick.md](../../docs/windows-oneclick.md)
 
 ## No build — run from the checkout

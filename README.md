@@ -238,8 +238,9 @@ Prefer plain pip? `bash scripts/run-agent-proxy.sh --dsh` does the same with a `
 - Options: `--port`, `--bind`, `--models`, `--rotate-key`, `--print`, `--json`,
   `--reset-routes`, `--launch-dsh`
 - uv walkthrough: [docs/uv-quickstart.md](docs/uv-quickstart.md)
-- Windows 11 one-click (double-click `packaging\win\G4F-Proxy.cmd`, or build `g4f-proxy.exe`):
-  [docs/windows-oneclick.md](docs/windows-oneclick.md)
+- Windows 11 one-click: download [`g4f-proxy.exe`](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/g4f-proxy.exe)
+  (64.6 MB, double-click, no Python needed) — or run `packaging\win\G4F-Proxy.cmd` from the checkout.
+  See [docs/windows-oneclick.md](docs/windows-oneclick.md)
 - Details and troubleshooting: [docs/dsh-integration.md](docs/dsh-integration.md)
 
 ### MCP Server

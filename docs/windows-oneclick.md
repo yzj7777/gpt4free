@@ -11,14 +11,28 @@
 |---|---|---|---|---|---|---|
 | **A. 免构建启动器** | `G4F-Proxy.cmd` | 双击 + 联网（首次） | 1–3 min 装依赖 | < 1 KB | 之后可 | 最省事，随时跟随仓库更新 |
 | **B. PyInstaller 单文件** | `g4f-proxy.exe` | 双击 | 4–8 s | 见下方实测 | ✅ 完全离线 | **推荐主方案**，真·单个程序 |
-| **C. 便携目录** | `g4f-proxy-portable.zip` | 解压后双击 | 1–2 s | 同 B，解压后约 200 MB | ✅ | B 的稳健版，启动快，杀软误报少 |
+| **C. 便携目录** | `g4f-proxy-portable.zip` | 解压后双击 | 1–2 s | 66.1 MB | ✅ | B 的稳健版，启动快，杀软误报少 |
 | D. Nuitka / MSVC | `g4f-proxy.exe` | 双击 | 1–3 s | 类似 | ✅ | 需要 VS Build Tools，编译 20+ 分钟，收益不大 |
 | E. Docker Desktop | 镜像 | 装 Docker + WSL2 | — | GB 级 | ✅ | 不符合"一键"，不推荐 |
 
-**已实测：** 方案 B/C 已在 **GitHub Actions 的 windows-latest** 上真实构建通过（下文的 CI 工作流），
-产物上传为 artifact `g4f-proxy-windows-x64`，**130.0 MB**（单文件 exe + 便携包，压缩后合计）。
-构建日志中的 `Report sizes` 步骤会打印两个文件各自的大小。CI 里的两步冒烟测试全部通过：
-`--print --json` 拿到 base_url/api_key，以及真实启动服务后 `GET /v1/models` 返回 200。
+**已实测：** 方案 B/C 已在 **GitHub Actions 的 windows-latest** 上真实构建通过，并**已经发成 Release**，
+不需要登录 GitHub、不需要 Actions 权限就能直接下载：
+
+| 文件 | 大小 | 直接下载 |
+|---|---|---|
+| `g4f-proxy.exe`（单文件） | **64.6 MB** | [下载](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/g4f-proxy.exe) |
+| `g4f-proxy-portable.zip`（便携目录） | **66.1 MB** | [下载](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/g4f-proxy-portable.zip) |
+| `SHA256SUMS.txt` | 171 B | [校验和](https://github.com/yzj7777/gpt4free/releases/download/v0.0.0-win.1/SHA256SUMS.txt) |
+
+发布页：<https://github.com/yzj7777/gpt4free/releases/tag/v0.0.0-win.1>
+
+```
+exe  sha256 14ecfc4f36b9d9bda7445e2315166e0e7856964248981c29c1943079d4183108
+zip  sha256 54c11dfe4b9a697251fb83783ae9ea90450d44a25bdedc055a81917df8bddd19
+```
+
+CI 里的两步冒烟测试全部通过：`--print --json` 拿到 base_url/api_key，
+以及**真实启动这个 exe** 后 `GET /v1/models` 返回 200。
 
 同一份 spec 和启动逻辑在 Linux 上也验证过（PyInstaller 不能跨平台交叉编译，exe 只能在 Windows 上产出，
 所以 Windows 侧走 CI 或你本机的一行命令）。
