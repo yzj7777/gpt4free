@@ -59,13 +59,47 @@ def _enable_ansi() -> None:
         pass
 
 
+def _setup_console() -> None:
+    """UTF-8 everywhere, so box drawing and Chinese text never crash a run.
+
+    A frozen exe inherits the OEM code page (cp437 / cp936 / cp1252 ...); writing
+    "─" to it raises UnicodeEncodeError, which used to kill the whole process
+    right before the credentials were printed.
+    """
+    if IS_WINDOWS:
+        try:  # pragma: no cover - Windows only
+            import ctypes
+
+            ctypes.windll.kernel32.SetConsoleOutputCP(65001)
+            ctypes.windll.kernel32.SetConsoleCP(65001)
+        except Exception:
+            pass
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[union-attr]
+        except Exception:
+            pass
+
+
+def _emit(text: str, stream=None, end: str = "\n") -> None:
+    """print() that can never raise UnicodeEncodeError."""
+    stream = stream or sys.stdout
+    if stream is None:  # pythonw / detached console
+        return
+    try:
+        print(text, file=stream, end=end, flush=True)
+    except UnicodeEncodeError:
+        enc = getattr(stream, "encoding", None) or "ascii"
+        print(text.encode(enc, "replace").decode(enc, "replace"), file=stream, end=end, flush=True)
+
+
 def _say(msg: str) -> None:
     # progress goes to stderr so that `--json` stays machine readable
-    print(f"\033[1;36m▸\033[0m {msg}", file=sys.stderr, flush=True)
+    _emit(f"\033[1;36m▸\033[0m {msg}", stream=sys.stderr)
 
 
 def _warn(msg: str) -> None:
-    print(f"\033[1;33m!\033[0m {msg}", file=sys.stderr, flush=True)
+    _emit(f"\033[1;33m!\033[0m {msg}", stream=sys.stderr)
 
 
 def _clipboard(text: str) -> bool:
@@ -111,6 +145,31 @@ def _cache_dir() -> Path:
     from g4f.config import get_cache_dir
 
     return Path(get_cache_dir())
+
+
+def _resolve_routes_file(explicit: Path | None) -> Path:
+    """Where config.yaml lives.
+
+    The default is always ``<cookies dir>/config.yaml``.  Sniffing "is the given
+    path a directory?" on the default broke first runs: when ``~/.g4f/cookies``
+    did not exist yet the directory path was treated as the YAML file and a
+    *file* named ``cookies`` was created, after which g4f found no routes at all.
+    """
+    if explicit is not None:
+        path = explicit.expanduser()
+        if path.is_dir() or path.suffix.lower() not in (".yaml", ".yml"):
+            path = path / "config.yaml"
+        return path.resolve()
+
+    cookies_dir = Path(os.environ.get("G4F_COOKIES_DIR") or _default_cookies_dir())
+    if cookies_dir.is_file():  # heal a file left behind by an older build
+        healed = cookies_dir.with_name(cookies_dir.name + ".config.yaml")
+        try:
+            cookies_dir.rename(healed)
+            _warn(f"stray route file {cookies_dir.name} moved to {healed.name}")
+        except OSError:
+            pass
+    return (cookies_dir / "config.yaml").resolve()
 
 
 def _port_open(port: int, host: str = "127.0.0.1") -> bool:
@@ -306,29 +365,31 @@ def register_dsh(args, base_url: str, key_file: Path) -> bool:
 def print_panel(base_url: str, api_key: str, key_source: str, routes: Path, args) -> None:
     line = "─" * 62
     masked = api_key[:8] + "…" if len(api_key) > 8 else api_key
-    print()
-    print(line)
-    print(f" base URL  : {base_url}")
-    print(f" api key   : {masked}   ({key_source})")
-    print(f" routes    : {routes}")
-    print()
-    print(" OpenAI-compatible clients:")
-    print(f"   OPENAI_BASE_URL={base_url}")
-    print(f"   OPENAI_API_KEY={api_key}")
-    print()
-    print(" curl:")
-    print(f'   curl -H "Authorization: Bearer {api_key}" {base_url}/models')
+    out = [
+        "",
+        line,
+        f" base URL  : {base_url}",
+        f" api key   : {masked}   ({key_source})",
+        f" routes    : {routes}",
+        "",
+        " OpenAI-compatible clients:",
+        f"   OPENAI_BASE_URL={base_url}",
+        f"   OPENAI_API_KEY={api_key}",
+        "",
+        " curl:",
+        f'   curl -H "Authorization: Bearer {api_key}" {base_url}/models',
+    ]
     if args.dsh:
-        print()
-        print(" DeepSeek Harness:")
-        if IS_WINDOWS:
-            print(f"   set G4F_API_KEY={api_key}")
-        else:
-            print(f"   export G4F_API_KEY={api_key}")
-        print("   npx @deepseek-ai/dsh web")
-        print("   # then pick provider 'g4f' → model 'agent-primary'")
-    print(line)
-    print()
+        export = "set" if IS_WINDOWS else "export"
+        out += [
+            "",
+            " DeepSeek Harness:",
+            f"   {export} G4F_API_KEY={api_key}",
+            "   npx @deepseek-ai/dsh web",
+            "   # then pick provider 'g4f' → model 'agent-primary'",
+        ]
+    out += [line, ""]
+    _emit("\n".join(out))
 
 
 # --------------------------------------------------------------------------- #
@@ -449,6 +510,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    _setup_console()
     _enable_ansi()
     args = build_parser().parse_args(argv)
 
@@ -470,14 +532,7 @@ def main(argv: list[str] | None = None) -> int:
                 break
 
     args.key_file = args.key_file.expanduser().resolve()
-    routes_file = (
-        args.routes.expanduser()
-        if args.routes
-        else Path(os.environ.get("G4F_COOKIES_DIR") or _default_cookies_dir())
-    )
-    routes_file = routes_file.resolve()
-    if routes_file.is_dir():
-        routes_file = routes_file / "config.yaml"
+    routes_file = _resolve_routes_file(args.routes)
 
     base_url = f"http://127.0.0.1:{args.port}/v1"
 
