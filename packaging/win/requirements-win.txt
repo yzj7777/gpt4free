@@ -1,0 +1,9 @@
+# Dependencies for the one-click Windows build.
+#
+# The frozen exe only ships the API proxy: no tray icon, no document conversion,
+# no local models.  Everything below is what `import g4f.api` actually touches.
+# Keeping it as an -r include avoids a second copy of the list that can drift.
+-r ../../requirements.txt
+
+# build tooling (not shipped inside the exe)
+pyinstaller>=6.10

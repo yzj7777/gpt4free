@@ -19,3 +19,8 @@ windows
 build
 assets
 g4f.dev
+.venv/
+.g4f-api-key
+uv.lock
+dist/
+.build-venv/

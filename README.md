@@ -208,6 +208,40 @@ python -m g4f --port 8080 --debug
 python -m g4f.cli gui --port 8080 --debug
 ```
 
+### Agent proxy (one command) + DeepSeek Harness
+
+The fastest path uses [uv](https://docs.astral.sh/uv/) — it creates `.venv`, installs
+dependencies, generates an API key, writes multi-provider fallback routes and starts an
+OpenAI-compatible proxy on `:8080`, all in one command:
+
+```bash
+uv run g4f-api --dsh --set-default
+```
+
+It prints the base URL and the API key when ready:
+
+```
+ base URL  : http://127.0.0.1:8080/v1
+ api key   : g4f_LKDr…
+```
+
+Add `--dsh` to register the proxy as a provider in DeepSeek Harness (`~/.dsh/settings.yaml`),
+then in another shell:
+
+```bash
+export G4F_API_KEY=$(cat .g4f-api-key)
+npx @deepseek-ai/dsh web
+```
+
+Prefer plain pip? `bash scripts/run-agent-proxy.sh --dsh` does the same with a `venv` + `pip`.
+
+- Options: `--port`, `--bind`, `--models`, `--rotate-key`, `--print`, `--json`,
+  `--reset-routes`, `--launch-dsh`
+- uv walkthrough: [docs/uv-quickstart.md](docs/uv-quickstart.md)
+- Windows 11 one-click (double-click `packaging\win\G4F-Proxy.cmd`, or build `g4f-proxy.exe`):
+  [docs/windows-oneclick.md](docs/windows-oneclick.md)
+- Details and troubleshooting: [docs/dsh-integration.md](docs/dsh-integration.md)
+
 ### MCP Server
 GPT4Free now includes a Model Context Protocol (MCP) server that allows AI assistants like Claude to access web search, scraping, and image generation capabilities.
 

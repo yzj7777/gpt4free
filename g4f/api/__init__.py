@@ -909,34 +909,58 @@ class Api:
             if self._models_cache is not None and (now - self._models_cache_time) < 300:
                 return self._models_cache
 
-            result = {
-                "object": "list",
-                "data": [
-                    {
-                        "id": model,
-                        "object": "model",
-                        "created": 0,
-                        "owned_by": "",
-                        "image": isinstance(model, g4f.models.ImageModel),
-                        "vision": isinstance(model, g4f.models.VisionModel),
-                        "provider": False,
-                    }
-                    for model in AnyProvider.get_models()
-                ]
-                + [
-                    {
-                        "id": provider_name,
-                        "object": "model",
-                        "created": 0,
-                        "owned_by": getattr(provider, "label", ""),
-                        "image": bool(getattr(provider, "image_models", False)),
-                        "vision": bool(getattr(provider, "vision_models", False)),
-                        "provider": True,
-                    }
-                    for provider_name, provider in ProviderUtils.convert.items()
-                    if provider.working
-                ],
-            }
+            data = [
+                {
+                    "id": model,
+                    "object": "model",
+                    "created": 0,
+                    "owned_by": "",
+                    "image": isinstance(model, g4f.models.ImageModel),
+                    "vision": isinstance(model, g4f.models.VisionModel),
+                    "provider": False,
+                }
+                for model in AnyProvider.get_models()
+            ] + [
+                {
+                    "id": provider_name,
+                    "object": "model",
+                    "created": 0,
+                    "owned_by": getattr(provider, "label", ""),
+                    "image": bool(getattr(provider, "image_models", False)),
+                    "vision": bool(getattr(provider, "vision_models", False)),
+                    "provider": True,
+                }
+                for provider_name, provider in ProviderUtils.convert.items()
+                if provider.working
+            ]
+
+            # Model routes declared in config.yaml (e.g. "agent-primary") are
+            # accepted by /v1/chat/completions but are not real g4f models, so
+            # they would otherwise be invisible to clients - including the
+            # "fetch available models" button of OpenAI-compatible GUIs.
+            try:
+                from ..providers.config_provider import RouterConfig
+
+                known = {item["id"] for item in data}
+                for route_name, route in RouterConfig.routes.items():
+                    if route_name in known:
+                        continue
+                    data.append(
+                        {
+                            "id": route_name,
+                            "object": "model",
+                            "created": 0,
+                            "owned_by": "route",
+                            "image": False,
+                            "vision": False,
+                            "provider": False,
+                            "route": [p.provider for p in route.providers],
+                        }
+                    )
+            except Exception:
+                pass
+
+            result = {"object": "list", "data": data}
             self._models_cache = result
             self._models_cache_time = now
             return result

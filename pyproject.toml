@@ -1,0 +1,86 @@
+# uv / PEP 621 metadata.
+#
+# setup.py stays the source of truth for the published package; this file exists
+# so that `uv sync` / `uv run` work out of the box in a git checkout:
+#
+#   uv run g4f-api --dsh
+#
+# Notes:
+#   * The dependency list mirrors requirements.txt (the API-capable set), not the
+#     minimal install_requires from setup.py.  An OpenAI-compatible API server
+#     needs fastapi/uvicorn/pyyaml, so they are not optional here.
+#   * The version is intentionally a placeholder: upstream derives it from
+#     $G4F_VERSION at release time, and a checkout has no meaningful version.
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "g4f"
+version = "0.0.0"
+description = "The official gpt4free repository | various collection of powerful language models"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0" }
+authors = [{ name = "Tekky", email = "support@g4f.ai" }]
+keywords = ["gpt4free", "g4f", "openai", "api", "reverse-proxy", "free"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "requests",
+    "pycryptodome",
+    "curl_cffi>=0.6.2",
+    "aiohttp",
+    "certifi",
+    "browser_cookie3",
+    "nest-asyncio2",
+    "werkzeug",
+    "pillow",
+    "platformdirs",
+    "fastapi",
+    "uvicorn",
+    "flask[async]",
+    "brotli",
+    "beautifulsoup4",
+    "setuptools",
+    "python-multipart",
+    "a2wsgi",
+    "python-dotenv",
+    "ddgs",
+    "numpy",
+    "PyYAML",
+    "cryptography",
+]
+
+[project.optional-dependencies]
+# Everything setup.py's "all" extra pulls in. Opt-in: `uv sync --extra full`.
+full = [
+    "aiohttp_socks",
+    "cairosvg",
+    "markitdown[all]",
+    "pystray",
+    "wasmtime",
+]
+
+[project.scripts]
+g4f = "g4f.cli:main"
+g4f-api = "g4f.cli.api_launcher:main"
+g4f-mcp = "g4f.mcp.server:main"
+
+[project.urls]
+Source = "https://github.com/xtekky/gpt4free"
+Tracker = "https://github.com/xtekky/gpt4free/issues"
+
+[tool.setuptools.packages.find]
+include = ["g4f*"]
+
+[tool.setuptools.package-data]
+g4f = ["providers.json"]
+
+[tool.uv]
+# The checkout itself is the package under test, so install it in editable mode.
+package = true
